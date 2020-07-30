@@ -1,3 +1,6 @@
-coiso=str(9)+str(9)
+lista1=[1,2,3]
+lista2=[456]
 
-print(coiso)
+l=lista1+lista2
+
+print(l)

@@ -1,16 +1,19 @@
+import sys
+sys.setrecursionlimit(10**6)
+
 def definir_problema():
     
     problema= [
 
-        [7, 0, 8, 0, 9, 0, 5, 0, 0 ],
-        [0, 0, 0, 7, 3, 0, 0, 1, 9 ],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-        [2, 0, 0, 0, 0, 0, 6, 0, 0 ],
-        [0, 0, 6, 9, 0, 4, 8, 0, 0 ],
-        [0, 0, 5, 0, 0, 0, 0, 0, 1 ],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-        [4, 8, 0, 0, 5, 7, 0, 0, 0 ],
-        [0, 0, 9, 0, 6, 0, 1, 0, 3 ],
+        [0, 5, 0, 0, 9, 0, 0, 7, 0 ],
+        [0, 0, 8, 0, 2, 0, 9, 0, 0 ],
+        [0, 7, 0, 5, 0, 6, 0, 2, 0 ],
+        [4, 0, 0, 0, 0, 0, 0, 0, 5 ],
+        [0, 2, 0, 0, 7, 0, 0, 1, 0 ],
+        [7, 0, 0, 0, 0, 0, 0, 0, 9 ],
+        [0, 6, 0, 2, 0, 9, 0, 3, 0 ],
+        [0, 0, 2, 0, 1, 0, 6, 0, 0 ],
+        [0, 1, 0, 0, 5, 0, 0, 4, 0 ],
     ]
 
     for linha in problema:
@@ -63,9 +66,8 @@ def checar_quadrado(problema,pos_linha,pos_coluna,numeros_possiveis):
 
 
 
-def resolver(problema):
+def resolver_primeira_fase(problema,possibilidades):
     vdd=True
-    possibilidades={}
     while vdd:
         vdd=False
         for i,linha in enumerate(problema):
@@ -74,19 +76,84 @@ def resolver(problema):
                     numeros_possiveis=checar_possiveis_comeco(linha)
                     numeros_possiveis=checar_coluna(problema,j,numeros_possiveis)
                     numeros_possiveis=checar_quadrado(problema,i,j,numeros_possiveis)
-                    possibilidades[str(i)+str(j)]=numeros_possiveis
+                    possibilidades[str(i)+str(j)]=list(numeros_possiveis)
                     if len(list(numeros_possiveis))==1:
                         vdd=True
                         problema[i][j]=str(list(numeros_possiveis)[0])
-        
+    
+    return possibilidades
+
+def resolver_segunda_fase(problema,caminho,lista_errados):
+    for i,negocio in enumerate(problema):
+        for j, numero in enumerate(negocio):
+            if type(numero) is not str:
+                problema[i][j]=0
+    marcador=-1
+    for i,linha in enumerate(problema):
+        for j, numero in enumerate(linha):
+            if numero==0:
+                marcador+=1
+                if len(caminho)>marcador:
+                    problema[i][j]=caminho[marcador]
+                else:
+
+                    numeros_possiveis=checar_possiveis_comeco(linha)
+                    numeros_possiveis=checar_coluna(problema,j,numeros_possiveis)
+                    numeros_possiveis=checar_quadrado(problema,i,j,numeros_possiveis)
+                    numeros_possiveis=list(numeros_possiveis)
+                    
+                    if len(numeros_possiveis)==0:
+                        lista_errados.append(caminho)
+                        resolver_segunda_fase(problema,caminho[:len(caminho)-1],lista_errados)
+                    
+                    elif len(numeros_possiveis)==1:
+                        if caminho+[numeros_possiveis[0]] in lista_errados:
+                            lista_errados.append(caminho)
+                            resolver_segunda_fase(problema,caminho[:len(caminho)-1],lista_errados)
+                        else:
+                            resolver_segunda_fase(problema,caminho+[numeros_possiveis[0]],lista_errados)
+
+                    else:
+                        ntem=True
+                        for i, opcao in enumerate(numeros_possiveis):
+                            if caminho+[numeros_possiveis[i]] in lista_errados:
+                                
+                                pass
+                            else:
+                                
+                                ntem=False
+                                resolver_segunda_fase(problema,caminho+[numeros_possiveis[i]],lista_errados)
+                                break
+                        if ntem:
+                            lista_errados.append(caminho)
+                            resolver_segunda_fase(problema,caminho[:len(caminho)-1],lista_errados)
+
+                                    
+
+                       
+
+                    
+                
+
+            
+
                     
 
 
 def main():
     problema=definir_problema()
-    resolvido=resolver(problema)
+    problema_padrao=definir_problema()
+    possibilidades={}
+    possibilidades=resolver_primeira_fase(problema,possibilidades)
+    caminho=[]
+    for k,v in possibilidades.items():
+        caminho.append(v[0])
+
+    resolver_segunda_fase(problema,[],[])
+
     for linha in problema:
         for i, numero in enumerate(linha):
             linha[i]=int(numero)
         print(linha)
+    
 main()
